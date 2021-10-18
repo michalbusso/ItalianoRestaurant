@@ -1,0 +1,315 @@
+﻿@{
+    ViewData["Title"] = "Our Menu";
+}
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@{
+    var Categories = ViewData["categories"] as List<ItalianoRestaurant.Models.Category>;
+}
+@{
+    var isManager = ViewData["isManager"];
+}
+
+<div >
+    <h1 class ="container" style=" font-weight: bold ; text-align: center">Italian menu </h1>
+    <p>
+        @Html.DropDownList(
+       "category",
+       new SelectList(
+           Categories.Select(x => new { Value = x.categoryId, Text = x.categoryName }),
+           "Value",
+           "Text"), "choose category ",
+       new { @id = "category", @class = "form-control" }
+    )
+    </p>
+</div>
+        <div class="col-md-10" id="custoAllergenic">
+            <input type="checkbox" />
+            Sensitive to allergenic components
+        </div>
+        <br />
+        <br />
+        <div class="row" >
+            <div id="ProductsTable" class="col-md-10">
+                <table class="table" align="left">
+                    <tr>
+                        <th>
+                            Food Name
+                        </th>
+                        <th>
+                            Price
+                        </th>
+                        <th id="elerg" class="dynamic-hidden-col" >
+                            Allergens
+                        </th>
+                        <th id="buttonmanager">
+                        </th>
+                    </tr>
+                    <tbody id="products">
+                      
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-md-10" >
+                <button id="NewFoodButton" class="btn btn-primary">Add new food</button>
+            </div>
+            <div class="col-md-10" id="addProduct">
+                <div id="NewProducthForm">
+                    <div class="form-group">
+                        <label for="NewProductName">Food Name</label>
+                        <input type="text" class="form-control" id="NewProductName" placeholder="Please enter food name">
+                    </div>
+                    <div class="form-group">
+                        <label for="NewProductPrice">Price</label>
+                        <input type="number" class="form-control" id="NewProductPrice" step="0.01" placeholder="Enter Price">
+                    </div>
+                    <div class="form-check">
+                        <label for="NewAllergic">Contains allergenic components</label>
+                        <input type="checkbox" class="form-check-input" id="NewAllergic" placeholder="Enter Allergic">
+                    </div>
+                    <button id="NewProductSavehButton" class="btn btn-primary">Save</button>
+                </div>
+            </div>
+
+        </div class="row">
+        <style>
+
+            th {
+                text-align: left;
+            }
+
+            select {
+                display: inline !important;
+            }
+
+            button {
+                margin-right: 5px;
+            }
+
+            #addProduct {
+                margin-bottom: 10px;
+            }
+
+            #NewAllergic {
+                left: 17px;
+            }
+            body {
+                background: #F1F0EF;
+            }
+        </style>
+
+        @section Scripts {
+            <script>
+        $("#ProductsTable").hide();
+        $("#addProduct").hide();
+        $("#ProdutsTable").removeClass("col-md-10");
+        $('.category').css('text-align', 'left');
+        $(document).ready(function () {
+            if (@isManager== 1) {
+                $("#custoAllergenic").hide();
+                $("#NewFoodButton").hide();
+                $("#elerg").css("visibility", "visible");
+         }
+            else {
+                $("#elerg").css("visibility", "hidden");
+                $("#NewFoodButton").hide();
+            }
+        });
+
+        $("#custoAllergenic").click(function () {
+            var categoryId = $("#category :selected").val();
+            var Allergenic = $("#custoAllergenic :checked").val()
+            if (Allergenic == "on") {
+                Allergic_1 = true;
+            }
+            else {
+                Allergic_1 = false;
+            }
+            if (categoryId > 0) {
+                $.ajax({
+                    type: 'GET',
+                    url: '/Menu/GetProducts/',
+                    data: {
+                        id: categoryId,
+                        allergic: Allergic_1
+                    },
+                    success: function(data) {
+                        loadTable(data.products);
+                    },
+                    error: function () {
+                        alert("error");
+                    }
+                });
+            }
+        });
+
+        $("#category").change(function () {
+            $("#addProduct").hide();
+            $("#ProdutsTable").removeClass("col-md-10");
+            if (@isManager== 1) {
+                $("#NewFoodButton").show();
+                $("#NewFoodButton").click(function () {
+                    $("#addProduct").show();
+                    $("#ProdutsTable").addClass("col-md-10");
+                    $("#NewFoodButton").hide();
+
+                });
+            }
+                $("select option:first-child").attr("disabled", "true");
+            var categoryId = $("#category :selected").val();
+            console.log($("#category :selected").val(), $("select option:selected").text());
+            var Allergenic = $("#custoAllergenic :checked").val();
+            if (Allergenic == "on") {
+                Allergic_1 = true;
+            }
+            else {
+                Allergic_1 = false;
+            }
+
+            if (categoryId > 0) {
+               $.ajax({
+               type: 'GET',
+               url: '/Menu/GetProducts/',
+               data: {
+                   id: categoryId,
+                   allergic: Allergic_1
+                    },
+              success: function (data) {
+              loadTable(data.products);
+                    },
+                    error: function () {
+                        alert("error");
+                    }
+                });
+            }
+        });
+
+        function loadTable(data)
+        {
+            $('#products').empty();
+            $("#ProductsTable").show();
+            for (let i = 0; i < data.length; i++)
+            {
+                if (@isManager== 1) {
+                    var tr = $('<tr>')
+                        .append($('<td>').append(data[i].productName)
+                            .attr({ contenteditable: "true", id: "productName_" + data[i].productId }))
+                        .append($('<td>').append(data[i].price)
+                            .attr({ contenteditable: "true", id: "price_" + data[i].productId }))
+                        .append($('<td>').append($("<input type='checkbox'>").prop('checked', data[i].hasAllergens)
+                            .attr({ contenteditable: "true", id: "hasAllergens_" + data[i].productId })))
+                        .append($('<td>').append($('<button/>', {
+                            text: 'SAVE UPDATES',
+                            id: 'editBtn_' + data[i].productId,
+                            class: 'btn btn-success',
+                            click: function () { editProduct(this.id); }
+                        })).append($('<button/>', {
+                            text: 'DELETE',
+                            id: 'deleteBtn_' + data[i].productId,
+                            class: 'btn btn-danger',
+                            click: function () { deleteProduct(this.id); }
+                        })))
+                } else {
+                    if (data[i].hasAllergens == 1) {
+                        var tr = $('<tr style="color: red ; font-weight: bold;">')
+                            .append($('<td>').append(data[i].productName))
+                            .append($('<td>').append(data[i].price));
+                    }
+                    if (data[i].hasAllergens == 0) {
+
+                        var tr = $('<tr>')
+                            .append($("<td>").append(data[i].productName))
+                            .append($('<td>').append(data[i].price));
+                    }
+                }
+            $('#products').append(tr);
+            }
+        }
+
+        $("#NewProductSavehButton").click(function () {
+            let categoryId = parseInt($("#category :selected").val());
+            var allergic = $("#NewAllergic").is(":checked");
+            if (categoryId > 0 && $("#NewProductName").val() != "" && $("#NewProductPrice").val() > 0) {
+                $.ajax({
+                    url: '/Menu/CreateProduct',
+                    type: 'Post',
+                    data: {
+                        categoryId: categoryId,
+                        productName: $("#NewProductName").val(),
+                        price: $("#NewProductPrice").val(),
+                        hasAllergens: allergic
+                    },
+                    success: function (data) {
+                        let categoryId = parseInt($("#category :selected").val());
+                        $("#NewProductPrice").val(0);
+                        $("#NewProductName").val("");
+                        $("#NewAllergic").prop("checked", false);
+                        let products = data.products.filter(p => p.categoryId == categoryId);
+                        loadTable(products);
+                        $("#NewFoodButton").show();                  
+                        $("#addProduct").hide();
+                        $("#ProdutsTable").removeClass("col-md-10");
+                    },
+                    error: function () {
+                        alert("error");
+                    }
+                });
+            }
+            else {
+                alert("You need to enter the name of the food and the price!");
+            }
+        });
+                //edit food
+        function editProduct(id) {
+            id = parseInt(id.split('_')[1]);
+            let ctgId = parseInt($("#category :selected").val());
+            var allergic = $("#hasAllergens_" + id).is(":checked");
+            $.ajax({
+                url: '/Menu/UpdateProduct',
+                type: 'Put',
+                data: {
+                    categoryId: ctgId,
+                    productName:  $("#productName_" + id).text(),
+                    price: $("#price_" + id).text(),
+                    productId: id,
+                    hasAllergens: allergic
+                },
+                success: function (data) {
+                    alert("successfully updated!");
+                    let categoryId = parseInt($("#category :selected").val());
+                    let Products = data.Products.filter(p => p.categoryId == categoryId);
+                    loadTable(Products);
+                },
+                error: function () {
+                    alert("error");
+                }
+
+            });
+                }
+                //delete food
+        function deleteProduct(id) {
+            t = parseInt(id.split('_')[1]);
+            $.ajax({
+                type: 'Delete',
+                url: '/Menu/DeleteProduct/',
+                data: {
+                    id: t
+                },
+                success: function (data) {
+                    let categoryId = parseInt($("#category :selected").val());
+                    let products = data.products.filter(p => p.categoryId == categoryId);
+                    loadTable(products);
+                },
+                error: function () {
+                    alert("error");
+                }
+            });
+        }
+
+            </script>
+        }
+
+
+
+

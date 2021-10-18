@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "qTBhHIFF4tZdAyJZKIvNQjl8rKqFB7mcyDv4q/xFWfOYTaFSI2PlBSM4x+ghdM9b14DwM7uSCTpUI5ifEgTV7Q==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\michalb\\Desktop\\New folder\\ItalianoRestaurant\\ItalianoRestaurant\\ItalianoRestaurant.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\michalb\\.nuget\\packages\\newtonsoft.json\\13.0.1\\newtonsoft.json.13.0.1.nupkg.sha512",
+    "C:\\Users\\michalb\\.nuget\\packages\\nuget.frameworks\\5.11.0\\nuget.frameworks.5.11.0.nupkg.sha512"
+  ],
+  "logs": []
+}
