@@ -1,2 +1,2 @@
 # ItalianoRestaurant
- C# MVC .NET Core Web App
+ C# MVC .NET Core Web App.
